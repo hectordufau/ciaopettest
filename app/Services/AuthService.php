@@ -27,12 +27,12 @@ class AuthService
         ];
     }
 
-    public function login(array $credentials): array
+    public function login(array $credentials): array|false
     {
-        if (!$token = JWTAuth::attempt($credentials)) {
-            throw ValidationException::withMessages([
-                'email' => ['As credenciais fornecidas estão incorretas.'],
-            ]);
+        $token = JWTAuth::attempt($credentials);
+        
+        if (!$token) {
+            return false;
         }
 
         return [

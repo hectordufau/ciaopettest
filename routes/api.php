@@ -17,6 +17,6 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware(JwtAuthMiddleware::class)->group(function () {
-    Route::apiResource('pets', PetController::class);
     Route::get('/pets/search', [PetController::class, 'search']);
+    Route::apiResource('pets', PetController::class);
 });

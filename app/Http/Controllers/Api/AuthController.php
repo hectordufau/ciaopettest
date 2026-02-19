@@ -39,6 +39,13 @@ class AuthController extends Controller
 
         $result = $this->authService->login($credentials);
 
+        if ($result === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'As credenciais fornecidas estão incorretas.',
+            ], 401);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Login realizado com sucesso.',
