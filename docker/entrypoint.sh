@@ -9,6 +9,12 @@ until nc -z "$DB_HOST" 3306; do
 done
 echo "MySQL is ready!"
 
+echo "Running composer install..."
+composer install --no-interaction --prefer-dist --optimize-autoloader
+
+echo "Fixing permissions..."
+chmod -R 755 /var/www/storage /var/www/bootstrap/cache
+
 echo "Running migrations..."
 php artisan migrate --force
 
