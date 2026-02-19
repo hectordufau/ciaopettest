@@ -116,6 +116,8 @@ class PetTest extends TestCase
 
     public function test_unauthenticated_user_cannot_access_pets(): void
     {
+        auth('api')->logout();
+        
         $response = $this->getJson('/api/pets');
 
         $response->assertStatus(401);

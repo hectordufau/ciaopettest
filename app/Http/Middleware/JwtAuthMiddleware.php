@@ -14,7 +14,7 @@ class JwtAuthMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $user = auth()->guard('api')->user();
+            $user = auth('api')->user();
             
             if (!$user) {
                 return response()->json([
