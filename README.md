@@ -10,13 +10,12 @@ API RESTful Laravel para gerenciamento de registros de pets com autenticação J
 - ✅ Paginação
 - ✅ Validação de dados
 - ✅ Testes automatizados
-- ✅ Containerização Docker
+- ✅ Containerização Docker com setup automático
 
 ## Requisitos
 
 - Docker
-- Docker Compose
-- PHP 8.3+ (para desenvolvimento local sem Docker)
+- Docker Compose v2
 
 ## Instalação
 
@@ -28,46 +27,58 @@ git clone https://github.com/seu-usuario/pet-api.git
 cd pet-api
 ```
 
-2. Configure as variáveis de ambiente:
+2. Configure o arquivo `.env` (já está configurado para Docker):
 ```bash
-cp .env.example .env
+# O arquivo .env já contém as configurações padrão para Docker
+# MySQL: pet_api / pet_user / pet_password
 ```
 
 3. Inicie os containers Docker:
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
-4. Acesse o container da aplicação:
+4. Aguarde a inicialização automática:
+   - O container `app` executa automaticamente:
+     - `composer install`
+     - `php artisan key:generate`
+     - `php artisan jwt:secret`
+     - `php artisan migrate`
+
+5. Verifique os logs:
 ```bash
-docker-compose exec app bash
+docker compose logs -f app
 ```
 
-5. Instale as dependências e gere a chave:
-```bash
-composer install
-php artisan key:generate
-php artisan jwt:secret
-```
+### Acessando a aplicação
 
-6. Execute as migrations:
-```bash
-php artisan migrate
-```
+A API estará disponível em: **http://localhost:8080**
 
-7. Execute os testes:
+### Comandos Docker úteis
+
 ```bash
-php artisan test
+# Iniciar containers
+docker compose up -d
+
+# Parar containers
+docker compose down
+
+# Ver logs
+docker compose logs -f
+
+# Acessar container da aplicação
+docker compose exec app bash
+
+# Executar comandos artisan
+docker compose exec app php artisan <comando>
+
+# Executar testes
+docker compose exec app php artisan test
 ```
 
 ### Sem Docker
 
-1. Instale as dependências:
-```bash
-composer install
-```
-
-2. Configure o arquivo `.env`:
+1. Configure o arquivo `.env`:
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -79,8 +90,9 @@ DB_PASSWORD=your_password
 JWT_SECRET=your-jwt-secret
 ```
 
-3. Execute:
+2. Instale as dependências e configure:
 ```bash
+composer install
 php artisan key:generate
 php artisan jwt:secret
 php artisan migrate
@@ -162,12 +174,15 @@ curl -X POST http://localhost:8080/api/pets \
 | `DB_DATABASE` | Nome do banco | pet_api |
 | `DB_USERNAME` | Usuário do banco | pet_user |
 | `DB_PASSWORD` | Senha do banco | pet_password |
-| `JWT_SECRET` | Chave JWT | - |
+| `JWT_SECRET` | Chave JWT | (gerado automaticamente) |
 | `JWT_TTL` | Tempo de vida do token (min) | 60 |
 
 ## Executando Testes
 
 ```bash
+# Com Docker
+docker compose exec app php artisan test
+
 # Todos os testes
 php artisan test
 
@@ -182,7 +197,6 @@ php artisan test --coverage
 ## Estrutura do Projeto
 
 ```
-pet-api/
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/Api/  # Controllers da API
@@ -194,14 +208,37 @@ pet-api/
 │   ├── factories/           # Factories
 │   └── migrations/          # Migrations
 ├── docker/                  # Arquivos Docker
+│   ├── entrypoint.sh       # Script de inicialização
+│   ├── nginx.conf          # Configuração Nginx
+│   ├── php.ini             # Configuração PHP
+│   └── supervisor.conf     # Configuração Supervisor
 ├── routes/                  # Rotas
 ├── tests/                   # Testes
 │   ├── Feature/            # Testes de feature
 │   └── Unit/              # Testes unitários
 ├── docker-compose.yml
 ├── Dockerfile
-└── README.md
+├── .env
+├── README.md
+└── api-reference.md
 ```
+
+## Configuração Docker
+
+### Services
+
+- **app**: PHP-FPM 8.3 com Laravel
+- **webserver**: Nginx Alpine
+- **db**: MySQL 8.0
+
+### Portas
+
+- **8080**: API Nginx
+- **3306**: MySQL
+
+### Volumes
+
+- **pet-api-db**: Dados persistentes do MySQL
 
 ## License
 
