@@ -63,7 +63,8 @@ class AuthTest extends TestCase
             'password' => 'wrongpassword',
         ]);
 
-        $response->assertStatus(422);
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false);
     }
 
     public function test_authenticated_user_can_logout(): void
