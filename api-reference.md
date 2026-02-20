@@ -1,5 +1,7 @@
 # API Reference - Pet API
 
+Base URL: `http://localhost:8080`
+
 ## Autenticação
 
 Todos os endpoints de pets requerem autenticação via JWT. Inclua o token no header:
@@ -22,6 +24,7 @@ Registra um novo usuário no sistema.
 **Headers:**
 ```
 Content-Type: application/json
+Accept: application/json
 ```
 
 **Body:**
@@ -74,6 +77,7 @@ Autentica o usuário e retorna um token JWT.
 **Headers:**
 ```
 Content-Type: application/json
+Accept: application/json
 ```
 
 **Body:**
@@ -104,14 +108,11 @@ Content-Type: application/json
 }
 ```
 
-**Erro (422):**
+**Erro (401) - Credenciais inválidas:**
 ```json
 {
   "success": false,
-  "message": "As credenciais fornecidas estão incorretas.",
-  "errors": {
-    "email": ["As credenciais fornecidas estão incorretas."]
-  }
+  "message": "As credenciais fornecidas estão incorretas."
 }
 ```
 
@@ -126,6 +127,8 @@ Invalida o token JWT atual.
 **Headers:**
 ```
 Authorization: Bearer <token>
+Content-Type: application/json
+Accept: application/json
 ```
 
 **Resposta (200):**
@@ -133,6 +136,14 @@ Authorization: Bearer <token>
 {
   "success": true,
   "message": "Logout realizado com sucesso."
+}
+```
+
+**Erro (401) - Token já invalidado:**
+```json
+{
+  "success": false,
+  "message": "Usuário não autenticado ou não autorizado"
 }
 ```
 
@@ -147,6 +158,8 @@ Renova o token JWT.
 **Headers:**
 ```
 Authorization: Bearer <token>
+Content-Type: application/json
+Accept: application/json
 ```
 
 **Resposta (200):**
@@ -173,6 +186,7 @@ Retorna os dados do usuário autenticado.
 **Headers:**
 ```
 Authorization: Bearer <token>
+Accept: application/json
 ```
 
 **Resposta (200):**
@@ -183,6 +197,7 @@ Authorization: Bearer <token>
     "id": 1,
     "name": "João Silva",
     "email": "joao@example.com",
+    "email_verified_at": null,
     "created_at": "2024-01-01T00:00:00.000000Z",
     "updated_at": "2024-01-01T00:00:00.000000Z"
   }
@@ -202,6 +217,7 @@ Retorna lista paginada de pets do usuário autenticado.
 **Headers:**
 ```
 Authorization: Bearer <token>
+Accept: application/json
 ```
 
 **Query Parameters:**
@@ -214,7 +230,6 @@ Authorization: Bearer <token>
 **Resposta (200):**
 ```json
 {
-  "success": true,
   "data": [
     {
       "id": 1,
@@ -231,13 +246,40 @@ Authorization: Bearer <token>
       "updated_at": "2024-01-01T00:00:00.000000Z"
     }
   ],
+  "links": {
+    "first": "http://localhost:8080/api/pets?page=1",
+    "last": "http://localhost:8080/api/pets?page=1",
+    "prev": null,
+    "next": null
+  },
   "meta": {
     "current_page": 1,
-    "last_page": 1,
-    "per_page": 15,
-    "total": 1,
     "from": 1,
-    "to": 1
+    "last_page": 1,
+    "links": [
+      {
+        "url": null,
+        "label": "pagination.previous",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://localhost:8080/api/pets?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "pagination.next",
+        "page": null,
+        "active": false
+      }
+    ],
+    "path": "http://localhost:8080/api/pets",
+    "per_page": 15,
+    "to": 1,
+    "total": 1
   }
 }
 ```
@@ -254,6 +296,7 @@ Cria um novo pet.
 ```
 Authorization: Bearer <token>
 Content-Type: application/json
+Accept: application/json
 ```
 
 **Body:**
@@ -308,11 +351,9 @@ Content-Type: application/json
 **Erro de Validação (422):**
 ```json
 {
-  "success": false,
-  "message": "Erro de validação.",
+  "message": "validation.required",
   "errors": {
-    "name": ["O campo nome é obrigatório."],
-    "species": ["O campo espécie é obrigatório."]
+    "species": ["validation.required"]
   }
 }
 ```
@@ -328,6 +369,7 @@ Retorna os dados de um pet específico.
 **Headers:**
 ```
 Authorization: Bearer <token>
+Accept: application/json
 ```
 
 **Resposta (200):**
@@ -351,7 +393,13 @@ Authorization: Bearer <token>
 }
 ```
 
-**Erro (404):** Pet não encontrado ou pertence a outro usuário.
+**Erro (404) - Pet não encontrado:**
+```json
+{
+  "success": false,
+  "message": "Registro não encontrado."
+}
+```
 
 ---
 
@@ -359,12 +407,14 @@ Authorization: Bearer <token>
 
 Atualiza os dados de um pet existente.
 
-**Endpoint:** `PUT /api/pets/{id}`
+**Endpoint:** `PUT /api/pets/{id}`  
+**Endpoint:** `PATCH /api/pets/{id}`
 
 **Headers:**
 ```
 Authorization: Bearer <token>
 Content-Type: application/json
+Accept: application/json
 ```
 
 **Body (exemplo - campos opcionais):**
@@ -386,7 +436,15 @@ Content-Type: application/json
     "id": 1,
     "name": "Max",
     "species": "Cachorro",
-    ...
+    "breed": "Golden Retriever",
+    "gender": "Macho",
+    "birth_date": "2022-05-10",
+    "age": "2 anos",
+    "weight": "32.00 kg",
+    "microchip_number": null,
+    "notes": null,
+    "created_at": "2024-01-01T00:00:00.000000Z",
+    "updated_at": "2024-01-01T00:00:00.000000Z"
   }
 }
 ```
@@ -402,6 +460,7 @@ Exclui um pet.
 **Headers:**
 ```
 Authorization: Bearer <token>
+Accept: application/json
 ```
 
 **Resposta (200):**
@@ -423,14 +482,15 @@ Busca pets por termo (nome, espécie, raça ou microchip).
 **Headers:**
 ```
 Authorization: Bearer <token>
+Accept: application/json
 ```
 
 **Query Parameters:**
 
-| Parâmetro | Tipo | Descrição |
-|-----------|------|-----------|
-| q | string | Termo de busca |
-| per_page | int | Itens por página |
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| q | string | Sim | Termo de busca |
+| per_page | int | Não | Itens por página |
 
 **Exemplo:**
 ```
@@ -440,9 +500,37 @@ GET /api/pets/search?q=Buddy&per_page=10
 **Resposta (200):**
 ```json
 {
-  "success": true,
-  "data": [...],
-  "meta": {...}
+  "data": [
+    {
+      "id": 1,
+      "name": "Buddy",
+      "species": "Cachorro",
+      "breed": "Golden Retriever",
+      "gender": "Macho",
+      "birth_date": "2022-05-10",
+      "age": "2 anos",
+      "weight": "30.50 kg",
+      "microchip_number": null,
+      "notes": null,
+      "created_at": "2024-01-01T00:00:00.000000Z",
+      "updated_at": "2024-01-01T00:00:00.000000Z"
+    }
+  ],
+  "links": {
+    "first": "http://localhost:8080/api/pets/search?page=1",
+    "last": "http://localhost:8080/api/pets/search?page=1",
+    "prev": null,
+    "next": null
+  },
+  "meta": {
+    "current_page": 1,
+    "from": 1,
+    "last_page": 1,
+    "path": "http://localhost:8080/api/pets/search",
+    "per_page": 15,
+    "to": 1,
+    "total": 1
+  }
 }
 ```
 
@@ -454,7 +542,7 @@ GET /api/pets/search?q=Buddy&per_page=10
 |--------|-----------|
 | 200 | Sucesso |
 | 201 | Criado com sucesso |
-| 401 | Não autenticado (token inválido ou expirado) |
+| 401 | Não autenticado (token inválido, expirado ou não fornecido) |
 | 403 | Acesso negado |
 | 404 | Recurso não encontrado |
 | 422 | Erro de validação |
@@ -464,27 +552,112 @@ GET /api/pets/search?q=Buddy&per_page=10
 
 ## Erros Comuns
 
-### Token não fornecido
-```json
-{
-  "message": "Unauthenticated."
-}
-```
-
-### Token expirado
-```json
-{
-  "message": "Token has expired"
-}
-```
-
-### Validação falhou
+### Não autenticado (401)
 ```json
 {
   "success": false,
-  "message": "Erro de validação.",
+  "message": "Usuário não autenticado ou não autorizado"
+}
+```
+
+### Token expirado (401)
+```json
+{
+  "success": false,
+  "message": "Token expirado"
+}
+```
+
+### Token inválido (401)
+```json
+{
+  "success": false,
+  "message": "Token inválido"
+}
+```
+
+### Recurso não encontrado (404)
+```json
+{
+  "success": false,
+  "message": "Registro não encontrado."
+}
+```
+
+### Validação falhou (422)
+```json
+{
+  "message": "validation.required",
   "errors": {
-    "field": ["mensagem de erro"]
+    "species": ["validation.required"]
   }
 }
+```
+
+### Microchip duplicado (422)
+```json
+{
+  "message": "validation.unique",
+  "errors": {
+    "microchip_number": ["validation.unique"]
+  }
+}
+```
+
+---
+
+## Exemplos com cURL
+
+### Registro
+```bash
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "name": "João Silva",
+    "email": "joao@example.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+  }'
+```
+
+### Login
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "email": "joao@example.com",
+    "password": "password123"
+  }'
+```
+
+### Criar Pet
+```bash
+curl -X POST http://localhost:8080/api/pets \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "name": "Buddy",
+    "species": "Cachorro",
+    "breed": "Golden Retriever",
+    "gender": "Macho",
+    "birth_date": "2022-05-10",
+    "weight": 30.5
+  }'
+```
+
+### Listar Pets
+```bash
+curl -X GET http://localhost:8080/api/pets \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Buscar Pets
+```bash
+curl -X GET "http://localhost:8080/api/pets/search?q=Buddy" \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Accept: application/json"
 ```
