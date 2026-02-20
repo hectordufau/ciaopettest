@@ -101,6 +101,8 @@ php artisan serve
 
 ## Endpoints da API
 
+[Documentação em ](api-reference.md) 
+
 ### Autenticação
 
 | Método | Endpoint | Descrição |
